@@ -1,4 +1,5 @@
 """Онлайн бібліотека — REST API на Flask + PostgreSQL."""
+import sys
 
 import logging
 import os
