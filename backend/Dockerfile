@@ -6,6 +6,11 @@ ENV APP_VERSION=${APP_VERSION} \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
+# оновлюємо системні пакети базового образу: закриває вразливості, які знаходить Trivy
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # спочатку залежності, щоб Docker кешував цей шар

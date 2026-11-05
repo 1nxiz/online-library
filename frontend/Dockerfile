@@ -9,6 +9,9 @@ RUN npm run build
 # --- етап 2: Nginx віддає статику і проксує /api на backend ---
 FROM nginx:1.28-alpine
 
+# оновлюємо системні пакети базового образу: закриває вразливості, які знаходить Trivy
+RUN apk upgrade --no-cache
+
 # адресу backend можна змінити змінною оточення (docker compose / Kubernetes)
 ENV BACKEND_URL=http://backend:5000
 
