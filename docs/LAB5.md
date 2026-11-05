@@ -28,7 +28,7 @@
 
 - Образи `1.0.0`, `1.1.0`, `1.2.0`, `1.3.0` опубліковані (ЛР-2) і пакети **Public**.
 - Реліз з ЛР-4 видалено (`helm uninstall library -n online-library`).
-- У `argocd-apps/*.yaml` і `bootstrap/root-app.yaml` `repoURL` вказує на ваш репозиторій (заміна `1nxiz`).
+- У `argocd-apps/*.yaml` і `bootstrap/root-app.yaml` `repoURL` вказує на `https://github.com/1nxiz/online-library.git`.
 - `values-minikube.yaml`: `backend.image.tag: "1.0.0"`, `rollout.enabled: false`. Закомітьте і запуште.
 
 ### 2.2. Встановлення Argo CD (п.3)
