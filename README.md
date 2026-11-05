@@ -38,11 +38,10 @@ argocd-apps/               ЛР-5/6 Application застосунку і конт
 docs/LAB2.md … LAB6.md     звіти: хід виконання, команди, список скріншотів
 ```
 
-## Перший крок: вкажіть свій GitHub-логін
+## Репозиторій та образи
 
-У маніфестах, чарті та Argo CD стоїть заглушка `1nxiz`. У VS Code натисніть
-**Ctrl+Shift+H**, у полі пошуку введіть `1nxiz`, у полі заміни — ваш логін
-**маленькими літерами** (GHCR вимагає нижній регістр) → **Replace All**.
+- Репозиторій: https://github.com/1nxiz/online-library
+- Образи: `ghcr.io/1nxiz/online-library-backend`, `ghcr.io/1nxiz/online-library-frontend`
 
 ## Локальний запуск (Docker Compose)
 
