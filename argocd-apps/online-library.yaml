@@ -1,0 +1,35 @@
+# ЛР-5: застосунок «Онлайн бібліотека» з Helm-чарта в цьому ж репозиторії
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: online-library
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1" # після контролера Argo Rollouts
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/1nxiz/online-library.git
+    targetRevision: main
+    path: charts/online-library
+    helm:
+      valueFiles:
+        - values-minikube.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: online-library
+  syncPolicy:
+    automated:
+      prune: true # видаляти з кластера те, що прибрали з Git
+      selfHeal: true # повертати ручні зміни (для демо дрейфу спершу false)
+    syncOptions:
+      - CreateNamespace=true
+      - SkipDryRunOnMissingResource=true # Rollout CRD може з'явитися пізніше
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "library.componentName" (list . "config") }}
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+data:
+  APP_TITLE: {{ .Values.config.appTitle | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  DB_HOST: {{ include "library.componentName" (list . "postgres") | quote }}
+  DB_PORT: "5432"
+  DB_NAME: {{ .Values.config.dbName | quote }}
+  DB_USER: {{ .Values.config.dbUser | quote }}

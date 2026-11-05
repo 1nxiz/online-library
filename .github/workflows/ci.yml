@@ -1,0 +1,178 @@
+# ЛР-2: Continuous Integration для «Онлайн бібліотеки»
+# PR      -> lint + build + test кожного сервісу -> збірка образів + Trivy (без публікації)
+# push    -> те саме + публікація образів у GHCR (sha-тег; latest лише для main)
+# тег v*  -> додатково семантичний тег образу (1.0.0, 1.0)
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# новий push у ту саму гілку/PR скасовує попередній незавершений запуск
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------- сервіс backend (Python / Flask) ----------------
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip # кешування залежностей pip
+          cache-dependency-path: backend/requirements*.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint (Ruff)
+        # --output-format=github -> зауваження з'являються анотаціями прямо у PR
+        run: |
+          ruff check --output-format=github .
+          ruff format --check .
+
+      - name: Build
+        # «збірка» Python-сервісу: компіляція в байткод + перевірка, що модуль імпортується
+        run: |
+          python -m compileall -q app.py
+          python -c "import app; print('backend import OK')"
+
+      - name: Test (pytest)
+        run: pytest -v --junitxml=test-results.xml
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/test-results.xml
+
+  # ---------------- сервіс frontend (JS / Nginx) ----------------
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm # кешування залежностей npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (ESLint + HTMLHint)
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Test (node:test)
+        run: npm test
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+  # ---------------- образи: збірка, сканування, публікація ----------------
+  docker:
+    name: docker (${{ matrix.service }})
+    needs: [backend, frontend] # стартує лише після успіху всіх build/test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # потрібен для push у ghcr.io
+    strategy:
+      fail-fast: false # падіння одного образу не скасовує інший
+      matrix:
+        service: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Compute image name and version
+        run: |
+          # GHCR вимагає нижній регістр
+          echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/online-library-${{ matrix.service }}" >> "$GITHUB_ENV"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "APP_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          else
+            echo "APP_VERSION=sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      # 1) лише локальна збірка в межах раннера (без публікації)
+      - name: Build image (local)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          load: true
+          push: false
+          tags: online-library-${{ matrix.service }}:ci
+          build-args: APP_VERSION=${{ env.APP_VERSION }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+      # 2) блокуюче сканування вразливостей
+      # тег 0.35.0 захищений immutable releases (безпечна версія після інциденту березня 2026)
+      - name: Scan image (Trivy)
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: online-library-${{ matrix.service }}:ci
+          version: v0.69.3
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+      # 3) публікація — тільки для push у гілку/тег, не для Pull Request
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }} # секрет CI, у репозиторії паролів немає
+
+      - name: Push image
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: APP_VERSION=${{ env.APP_VERSION }}
+          cache-from: type=gha,scope=${{ matrix.service }}

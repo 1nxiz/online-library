@@ -1,0 +1,38 @@
+# ЛР-2 п.5: запуск ОПУБЛІКОВАНИХ образів з GHCR (без локальної збірки)
+#   PowerShell:
+#     $env:GH_USER="1nxiz"; $env:TAG="latest"
+#     docker compose -f docker-compose.ghcr.yml pull
+#     docker compose -f docker-compose.ghcr.yml up
+#   Відкрити http://localhost:8080
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: library
+      POSTGRES_PASSWORD: library-dev-password
+      POSTGRES_DB: library
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U library -d library"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ghcr.io/${GH_USER:?set GH_USER}/online-library-backend:${TAG:-latest}
+    environment:
+      DB_HOST: db
+      DB_NAME: library
+      DB_USER: library
+      DB_PASSWORD: library-dev-password
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: ghcr.io/${GH_USER:?set GH_USER}/online-library-frontend:${TAG:-latest}
+    environment:
+      BACKEND_URL: http://backend:5000
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend

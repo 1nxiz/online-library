@@ -1,0 +1,13 @@
+# Налаштування статичного аналізу (Ruff) і тестів (pytest)
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# E/W — стиль PEP 8, F — помилки (невикористані імпорти тощо),
+# I — сортування імпортів, B — типові баги, UP — сучасний синтаксис
+select = ["E", "W", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

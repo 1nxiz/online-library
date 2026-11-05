@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: library
+  namespace: online-library
+  labels:
+    app.kubernetes.io/part-of: online-library
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: library.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  name: http

@@ -1,0 +1,35 @@
+# Продакшн-подібне середовище: більше реплік і ресурсів, доступ через Ingress
+backend:
+  replicaCount: 3
+  image:
+    tag: "1.0.0" # стабільна перевірена версія
+  resources:
+    requests: { cpu: 200m, memory: 256Mi }
+    limits: { cpu: "1", memory: 512Mi }
+
+frontend:
+  replicaCount: 3
+  image:
+    tag: "1.0.0"
+  service:
+    type: ClusterIP
+  resources:
+    requests: { cpu: 100m, memory: 64Mi }
+    limits: { cpu: 300m, memory: 128Mi }
+
+config:
+  appTitle: "Онлайн бібліотека"
+  logLevel: WARNING
+
+secret:
+  # пароль у файлі не зберігаємо: helm install ... --set secret.dbPassword=...
+  dbPassword: ""
+
+postgres:
+  persistence:
+    enabled: true
+    size: 5Gi
+
+ingress:
+  enabled: true
+  host: library.local

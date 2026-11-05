@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Онлайн бібліотека</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1 id="app-title">Онлайн бібліотека</h1>
+    <span id="version" class="badge">…</span>
+  </header>
+
+  <main>
+    <form id="add-form" class="card" autocomplete="off">
+      <h2>Нова книга</h2>
+      <div class="row">
+        <input name="title" placeholder="Назва" aria-label="Назва">
+        <input name="author" placeholder="Автор" aria-label="Автор">
+        <input name="year" placeholder="Рік" aria-label="Рік" inputmode="numeric">
+        <button type="submit" class="btn">Додати</button>
+      </div>
+      <p id="form-error" class="error"></p>
+    </form>
+
+    <section class="card">
+      <div class="toolbar">
+        <h2>Каталог</h2>
+        <input id="search" type="search" placeholder="Пошук за назвою або автором" aria-label="Пошук">
+      </div>
+      <p id="stats" class="meta"></p>
+      <ul id="list"></ul>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

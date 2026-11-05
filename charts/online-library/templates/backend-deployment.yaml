@@ -1,0 +1,24 @@
+{{- /* Звичайний Deployment; вимикається, коли увімкнено Argo Rollouts (ЛР-6) */}}
+{{- if not .Values.rollout.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "library.componentName" (list . "backend") }}
+  labels:
+    {{- include "library.componentLabels" (list . "backend") | nindent 4 }}
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  revisionHistoryLimit: 10
+  # через скільки секунд без прогресу вважати оновлення невдалим (Argo CD -> Degraded)
+  progressDeadlineSeconds: {{ .Values.backend.progressDeadlineSeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      {{- include "library.selectorLabels" (list . "backend") | nindent 6 }}
+  template:
+    {{- include "library.backendPod" . | nindent 4 }}
+{{- end }}

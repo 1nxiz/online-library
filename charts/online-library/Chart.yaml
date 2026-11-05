@@ -1,0 +1,11 @@
+apiVersion: v2
+name: online-library
+description: Онлайн бібліотека — frontend (Nginx) + backend (Flask) + PostgreSQL
+type: application
+# version — версія самого чарта (шаблонів), змінюється при зміні чарта
+version: 0.1.0
+# appVersion — версія застосунку (тег образу за замовчуванням)
+appVersion: "1.0.0"
+keywords: [library, flask, postgres]
+maintainers:
+  - name: student
