@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 
 # --- етап 2: Nginx віддає статику і проксує /api на backend ---
-FROM nginx:1.28-alpine
+FROM nginx:1.30-alpine
 
 # оновлюємо системні пакети базового образу: закриває вразливості, які знаходить Trivy
 RUN apk upgrade --no-cache
