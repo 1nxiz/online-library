@@ -1,91 +1,52 @@
-# Онлайн бібліотека — лабораторні роботи з технологій DevOps
+# Онлайн бібліотека — ЛР-2. Continuous Integration (GitHub Actions, GHCR, Trivy, захист гілки)
 
-Мікросервісний застосунок: каталог книг з пошуком, видачею та поверненням.
+Це гілка **`lab2`**: код станом на кінець лабораторної роботи №2. Звіт з усіма командами й місцями для скріншотів — [docs/LAB2.md](docs/LAB2.md).
+
+## Застосунок
 
 | Сервіс | Стек | Порт | Що робить |
 |---|---|---|---|
 | `frontend` | HTML/JS + Nginx | 80 | сторінка каталогу; проксує `/api/*` на backend |
-| `backend` | Python 3.12, Flask, Gunicorn | 5000 | REST API книг, `/health`, `/version` |
+| `backend` | Python 3.12, Flask, Gunicorn | 5000 | REST API книг |
 | `db` | PostgreSQL 16 | 5432 | зберігає книги |
 
-## API backend
+Ендпоінти backend: `/health`, `/version`, `/api/info`, `/api/books` (GET/POST, пошук `?q=`), `/api/books/<id>/borrow`, `/api/books/<id>/return`, `DELETE /api/books/<id>`.
 
-| Метод | Шлях | Опис |
+## Що лежить у гілці
+
+| Шлях | Призначення |
+|---|---|
+| `.github/workflows/ci.yml` | CI: lint, build, test, образи, Trivy, публікація в GHCR **(нове)** |
+| `backend/` | Flask API + тести (pytest) + Ruff **(нове)** |
+| `frontend/` | сторінка + ESLint/HTMLHint + тести (node:test) + Nginx **(нове)** |
+| `docker-compose.yml` | локальний запуск зі збіркою (ЛР-1) **(нове)** |
+| `docker-compose.ghcr.yml` | запуск опублікованих образів з GHCR **(нове)** |
+| `docs/LAB2.md` | звіт ЛР-2 |
+
+## Запуск ЛР-2
+
+Пайплайн запускається сам на push у `main`, на Pull Request у `main` і на git-теги `v*`
+(релізи). Локальна перевірка:
+
+```powershell
+docker compose up --build            # http://localhost:8080
+cd backend;  pip install -r requirements-dev.txt; ruff check .; pytest -v
+cd ..\frontend; npm ci; npm run lint; npm run build; npm test
+```
+
+Повний хід роботи — у [docs/LAB2.md](docs/LAB2.md).
+
+## Образи
+
+`ghcr.io/1nxiz/online-library-backend` і `ghcr.io/1nxiz/online-library-frontend`. Версії створює CI при публікації релізу (git-тега `vX.Y.Z`); для ЛР-3…6 потрібні 1.0.0, 1.1.0, 1.2.0, 1.3.0.
+
+## Усі лабораторні
+
+| ЛР | Тема | Гілка |
 |---|---|---|
-| GET | `/health` | стан, версія та ім'я пода |
-| GET | `/version`, `/api/version` | версія застосунку (для ЛР-5/6) |
-| GET | `/api/info` | назва бібліотеки (з ConfigMap) і версія |
-| GET | `/api/books?q=...` | список книг, пошук за назвою/автором |
-| POST | `/api/books` | додати книгу `{title, author, year}` |
-| POST | `/api/books/<id>/borrow` | видати книгу |
-| POST | `/api/books/<id>/return` | повернути книгу |
-| DELETE | `/api/books/<id>` | видалити книгу |
-
-Версія «зашивається» в образ під час збірки (`APP_VERSION` = git-тег без `v` або `sha-xxxxxxx`) і показується бейджем біля заголовка сторінки.
-
-## Структура репозиторію
-
-```
-.github/workflows/ci.yml   ЛР-2  CI: lint, build, test, образи, Trivy, GHCR
-backend/                   Flask API + тести (pytest) + Ruff
-frontend/                  сторінка + ESLint/HTMLHint + тести (node:test) + Nginx
-docker-compose.yml         ЛР-1  локальний запуск зі збіркою
-docker-compose.ghcr.yml    ЛР-2  запуск опублікованих образів
-k8s/                       ЛР-3  маніфести Kubernetes (по файлу на об'єкт)
-charts/online-library/     ЛР-4  Helm-чарт (+ values-minikube.yaml для ЛР-5/6)
-bootstrap/root-app.yaml    ЛР-5  кореневий Application (App of Apps)
-argocd-apps/               ЛР-5/6 Application застосунку і контролера Argo Rollouts
-docs/LAB2.md … LAB6.md     звіти: хід виконання, команди, список скріншотів
-```
-
-## Репозиторій та образи
-
-- Репозиторій: https://github.com/1nxiz/online-library
-- Образи: `ghcr.io/1nxiz/online-library-backend`, `ghcr.io/1nxiz/online-library-frontend`
-
-## Локальний запуск (Docker Compose)
-
-```powershell
-docker compose up --build
-```
-
-Відкрити http://localhost:8080. Зупинка: `docker compose down` (або `down -v`, щоб видалити й дані).
-
-## Тести і лінтери локально
-
-```powershell
-# backend
-cd backend
-python -m venv .venv; .\.venv\Scripts\Activate.ps1
-pip install -r requirements-dev.txt
-ruff check .; ruff format --check .; pytest -v
-
-# frontend
-cd ..\frontend
-npm ci
-npm run lint; npm run build; npm test
-```
-
-## Лабораторні роботи
-
-| ЛР | Тема | Звіт |
-|---|---|---|
-| 2 | Continuous Integration (GitHub Actions, GHCR, Trivy, branch protection) | [docs/LAB2.md](docs/LAB2.md) |
-| 3 | Розгортання в Kubernetes (minikube) | [docs/LAB3.md](docs/LAB3.md) |
-| 4 | Helm-чарт, середовища dev/prod, хук і `helm test` | [docs/LAB4.md](docs/LAB4.md), [чарт](charts/online-library/README.md) |
-| 5 | GitOps з Argo CD (App of Apps, selfHeal, revert) | [docs/LAB5.md](docs/LAB5.md) |
-| 6 | Progressive delivery: canary з Argo Rollouts | [docs/LAB6.md](docs/LAB6.md) |
-
-Скріншоти складайте в `docs/screenshots/` з іменами, вказаними у кожному звіті.
-
-## Версії образів
-
-Образи з семантичними тегами створює CI при push git-тега:
-
-```powershell
-git tag v1.0.0; git push origin v1.0.0   # -> образи :1.0.0
-git tag v1.1.0; git push origin v1.1.0   # -> образи :1.1.0
-```
-
-Для всіх лабораторних знадобляться теги **1.0.0, 1.1.0, 1.2.0, 1.3.0**. Різниця між ними видна одразу:
-сторінка і `/version` показують свій номер версії.
+| 2 | Continuous Integration (GitHub Actions, GHCR, Trivy, захист гілки) | [`lab2`](https://github.com/1nxiz/online-library/tree/lab2) ← ви тут |
+| 3 | Розгортання застосунку в Kubernetes (minikube, kubectl) | [`lab3`](https://github.com/1nxiz/online-library/tree/lab3) |
+| 4 | Пакування застосунку в Helm-чарт (dev/prod, хук, helm test) | [`lab4`](https://github.com/1nxiz/online-library/tree/lab4) |
+| 5 | GitOps: розгортання через Argo CD (App of Apps, selfHeal, revert) | [`lab5`](https://github.com/1nxiz/online-library/tree/lab5) |
+| 6 | Progressive delivery: canary з Argo Rollouts | [`lab6`](https://github.com/1nxiz/online-library/tree/lab6) |
+| 7 | Observability: метрики, логи, дашборди й відкат за метриками | [`lab7`](https://github.com/1nxiz/online-library/tree/lab7) |
