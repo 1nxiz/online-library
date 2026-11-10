@@ -70,7 +70,7 @@ app.kubernetes.io/component: {{ index . 1 }}
 {{- printf "%s:%s" .image.repository (.image.tag | default .chart.AppVersion | toString) }}
 {{- end }}
 
-{{/* Шаблон пода backend */}}
+{{/* Шаблон пода backend — спільний для Deployment і Rollout */}}
 {{- define "library.backendPod" -}}
 metadata:
   labels:

@@ -4,7 +4,7 @@
 
 ## version vs appVersion
 
-- **`version: 0.1.0`** — версія **чарта**, тобто шаблонів і значень. Її збільшують, коли змінюється сам чарт: додали шаблон, параметр, змінили структуру values.
+- **`version: 0.1.0`** — версія **чарта**, тобто шаблонів і значень. Її збільшують, коли змінюється сам чарт: додали шаблон, параметр, змінили структуру values. Наприклад, додавання Rollout у ЛР-6 — це привід підняти `version` до `0.2.0`.
 - **`appVersion: "1.0.0"`** — версія **застосунку**, тобто образів backend/frontend. Вона береться як тег образу, якщо `image.tag` порожній, і записується в мітку `app.kubernetes.io/version`.
 
 Отже, один і той самий чарт `0.1.0` може розгортати різні версії застосунку (`--set backend.image.tag=1.1.0`), а нова версія чарта не обов'язково означає нову версію застосунку.
@@ -18,7 +18,8 @@
 | `secret.yaml` | Secret | якщо не задано `secret.existingSecret` |
 | `postgres-pvc.yaml` | PVC | `postgres.persistence.enabled` |
 | `postgres-deployment.yaml`, `postgres-service.yaml` | БД | завжди |
-| `backend-deployment.yaml` | Deployment | завжди |
+| `backend-deployment.yaml` | Deployment | `rollout.enabled: false` |
+| `backend-rollout.yaml` | Argo Rollout (canary) | `rollout.enabled: true` (ЛР-6) |
 | `backend-service.yaml`, `frontend-*.yaml` | Deployment/Service | завжди |
 | `ingress.yaml` | Ingress | `ingress.enabled` |
 | `pre-upgrade-job.yaml` | Job-хук `pre-upgrade` (перевірка БД) | `hooks.enabled` |
@@ -52,6 +53,10 @@
 | `ingress.enabled` / `.className` / `.host` | Ingress | false / nginx / library.local | false | true |
 | `hooks.enabled` | хук pre-upgrade | true | — | — |
 | `tests.enabled` | тест `helm test` | true | — | — |
+| `rollout.enabled` / `.replicaCount` | Argo Rollouts | false / 4 | — | — |
+| `rollout.canary.steps` | кроки canary | 25% → pause{} → 50% → 30s → 75% → 30s | — | — |
+
+`values-minikube.yaml` використовується Argo CD у ЛР-5/6. Там пароль не зберігається: використовується `existingSecret: library-db-secret`.
 
 ## Встановлення
 

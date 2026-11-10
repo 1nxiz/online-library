@@ -1,8 +1,8 @@
-# Онлайн бібліотека — ЛР-5. GitOps: розгортання через Argo CD (App of Apps, selfHeal, revert)
+# Онлайн бібліотека — ЛР-6. Progressive delivery: canary з Argo Rollouts
 
-Це гілка **`lab5`**: код станом на кінець лабораторної роботи №5. Звіт з усіма командами й місцями для скріншотів — [docs/LAB5.md](docs/LAB5.md).
+Це гілка **`lab6`**: код станом на кінець лабораторної роботи №6. Звіт з усіма командами й місцями для скріншотів — [docs/LAB6.md](docs/LAB6.md).
 
-Що саме додано в цій роботі, видно в порівнянні гілок: [lab4...lab5](https://github.com/1nxiz/online-library/compare/lab4...lab5).
+Що саме додано в цій роботі, видно в порівнянні гілок: [lab5...lab6](https://github.com/1nxiz/online-library/compare/lab5...lab6).
 
 ## Застосунок
 
@@ -25,23 +25,20 @@
 | `docker-compose.ghcr.yml` | запуск опублікованих образів з GHCR |
 | `k8s/` | маніфести Kubernetes, по файлу на об'єкт |
 | `charts/online-library/` | Helm-чарт (values, values-dev, values-prod) |
-| `charts/online-library/values-minikube.yaml` | значення для Argo CD на minikube **(нове)** |
-| `bootstrap/root-app.yaml` | кореневий Application (App of Apps), єдиний ручний apply **(нове)** |
-| `argocd-apps/online-library.yaml` | Application застосунку **(нове)** |
-| `docs/LAB5.md` | звіт ЛР-5 |
+| `charts/online-library/values-minikube.yaml` | значення для Argo CD на minikube |
+| `bootstrap/root-app.yaml` | кореневий Application (App of Apps), єдиний ручний apply |
+| `argocd-apps/online-library.yaml` | Application застосунку |
+| `argocd-apps/argo-rollouts.yaml` | контролер Argo Rollouts з Git **(нове)** |
+| `charts/online-library/templates/backend-rollout.yaml` | Rollout (canary) замість Deployment **(нове)** |
+| `docs/LAB6.md` | звіт ЛР-6 |
 
-## Запуск ЛР-5
+## Запуск ЛР-6
 
-Argo CD стежить саме за цією гілкою (`targetRevision: lab5`), тому всі коміти ЛР-5
-робіть у ній: `git checkout lab5`.
+Argo CD стежить саме за цією гілкою (`targetRevision: lab6`), тому всі коміти ЛР-6
+робіть у ній: `git checkout lab6`, потім `kubectl apply -f bootstrap/root-app.yaml`
+(root перемкнеться з `lab5` на `lab6`).
 
-```powershell
-kubectl create namespace online-library
-kubectl create secret generic library-db-secret -n online-library --from-literal=DB_PASSWORD=<пароль>
-kubectl apply -f bootstrap/root-app.yaml
-```
-
-Повний хід роботи — у [docs/LAB5.md](docs/LAB5.md).
+Повний хід роботи — у [docs/LAB6.md](docs/LAB6.md).
 
 ## Образи
 
@@ -54,6 +51,6 @@ kubectl apply -f bootstrap/root-app.yaml
 | 2 | Continuous Integration (GitHub Actions, GHCR, Trivy, захист гілки) | [`lab2`](https://github.com/1nxiz/online-library/tree/lab2) |
 | 3 | Розгортання застосунку в Kubernetes (minikube, kubectl) | [`lab3`](https://github.com/1nxiz/online-library/tree/lab3) |
 | 4 | Пакування застосунку в Helm-чарт (dev/prod, хук, helm test) | [`lab4`](https://github.com/1nxiz/online-library/tree/lab4) |
-| 5 | GitOps: розгортання через Argo CD (App of Apps, selfHeal, revert) | [`lab5`](https://github.com/1nxiz/online-library/tree/lab5) ← ви тут |
-| 6 | Progressive delivery: canary з Argo Rollouts | [`lab6`](https://github.com/1nxiz/online-library/tree/lab6) |
+| 5 | GitOps: розгортання через Argo CD (App of Apps, selfHeal, revert) | [`lab5`](https://github.com/1nxiz/online-library/tree/lab5) |
+| 6 | Progressive delivery: canary з Argo Rollouts | [`lab6`](https://github.com/1nxiz/online-library/tree/lab6) ← ви тут |
 | 7 | Observability: метрики, логи, дашборди й відкат за метриками | [`lab7`](https://github.com/1nxiz/online-library/tree/lab7) |

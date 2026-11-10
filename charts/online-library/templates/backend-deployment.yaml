@@ -1,3 +1,5 @@
+{{- /* Звичайний Deployment; вимикається, коли увімкнено Argo Rollouts (ЛР-6) */}}
+{{- if not .Values.rollout.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,3 +21,4 @@ spec:
       {{- include "library.selectorLabels" (list . "backend") | nindent 6 }}
   template:
     {{- include "library.backendPod" . | nindent 4 }}
+{{- end }}

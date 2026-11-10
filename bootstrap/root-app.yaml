@@ -12,7 +12,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/1nxiz/online-library.git
-    targetRevision: lab5 # гілка цієї лабораторної
+    targetRevision: lab6 # гілка цієї лабораторної
     path: argocd-apps
   destination:
     server: https://kubernetes.default.svc

@@ -1,14 +1,14 @@
-# Значення для minikube під керуванням Argo CD (ЛР-5).
+# Значення для minikube під керуванням Argo CD (ЛР-5, ЛР-6).
 # Реліз робиться комітом: змініть backend.image.tag -> git commit -> git push.
 
 backend:
   image:
-    tag: "1.0.0" # <- ЗМІНЮВАТИ ТУТ для нового релізу (не latest)
+    tag: "1.1.0" # <- ЗМІНЮВАТИ ТУТ для нового релізу (не latest)
   replicaCount: 2
 
 frontend:
   image:
-    tag: "1.0.0"
+    tag: "1.1.0"
   replicaCount: 2
   service:
     type: NodePort
@@ -37,3 +37,8 @@ hooks:
   enabled: false
 tests:
   enabled: false
+
+# ЛР-6: backend розгортається через Argo Rollouts (canary, 4 репліки) замість Deployment
+rollout:
+  enabled: true
+  replicaCount: 4

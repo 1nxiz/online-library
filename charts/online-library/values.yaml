@@ -65,3 +65,16 @@ hooks:
   enabled: true
 tests:
   enabled: true
+
+# ЛР-6: Argo Rollouts (canary) замість Deployment для backend
+rollout:
+  enabled: false
+  replicaCount: 4
+  canary:
+    steps:
+      - setWeight: 25
+      - pause: {} # ручна пауза: чекає kubectl argo rollouts promote
+      - setWeight: 50
+      - pause: { duration: 30s }
+      - setWeight: 75
+      - pause: { duration: 30s }
