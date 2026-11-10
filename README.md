@@ -1,8 +1,8 @@
-# Онлайн бібліотека — ЛР-4. Пакування застосунку в Helm-чарт (dev/prod, хук, helm test)
+# Онлайн бібліотека — ЛР-5. GitOps: розгортання через Argo CD (App of Apps, selfHeal, revert)
 
-Це гілка **`lab4`**: код станом на кінець лабораторної роботи №4. Звіт з усіма командами й місцями для скріншотів — [docs/LAB4.md](docs/LAB4.md).
+Це гілка **`lab5`**: код станом на кінець лабораторної роботи №5. Звіт з усіма командами й місцями для скріншотів — [docs/LAB5.md](docs/LAB5.md).
 
-Що саме додано в цій роботі, видно в порівнянні гілок: [lab3...lab4](https://github.com/1nxiz/online-library/compare/lab3...lab4).
+Що саме додано в цій роботі, видно в порівнянні гілок: [lab4...lab5](https://github.com/1nxiz/online-library/compare/lab4...lab5).
 
 ## Застосунок
 
@@ -24,18 +24,24 @@
 | `docker-compose.yml` | локальний запуск зі збіркою (ЛР-1) |
 | `docker-compose.ghcr.yml` | запуск опублікованих образів з GHCR |
 | `k8s/` | маніфести Kubernetes, по файлу на об'єкт |
-| `charts/online-library/` | Helm-чарт (values, values-dev, values-prod) **(нове)** |
-| `docs/LAB4.md` | звіт ЛР-4 |
+| `charts/online-library/` | Helm-чарт (values, values-dev, values-prod) |
+| `charts/online-library/values-minikube.yaml` | значення для Argo CD на minikube **(нове)** |
+| `bootstrap/root-app.yaml` | кореневий Application (App of Apps), єдиний ручний apply **(нове)** |
+| `argocd-apps/online-library.yaml` | Application застосунку **(нове)** |
+| `docs/LAB5.md` | звіт ЛР-5 |
 
-## Запуск ЛР-4
+## Запуск ЛР-5
+
+Argo CD стежить саме за цією гілкою (`targetRevision: lab5`), тому всі коміти ЛР-5
+робіть у ній: `git checkout lab5`.
 
 ```powershell
-helm lint charts/online-library
-helm install library charts/online-library -n online-library --create-namespace
-helm test library -n online-library --logs
+kubectl create namespace online-library
+kubectl create secret generic library-db-secret -n online-library --from-literal=DB_PASSWORD=<пароль>
+kubectl apply -f bootstrap/root-app.yaml
 ```
 
-Повний хід роботи — у [docs/LAB4.md](docs/LAB4.md).
+Повний хід роботи — у [docs/LAB5.md](docs/LAB5.md).
 
 ## Образи
 
@@ -47,7 +53,7 @@ helm test library -n online-library --logs
 |---|---|---|
 | 2 | Continuous Integration (GitHub Actions, GHCR, Trivy, захист гілки) | [`lab2`](https://github.com/1nxiz/online-library/tree/lab2) |
 | 3 | Розгортання застосунку в Kubernetes (minikube, kubectl) | [`lab3`](https://github.com/1nxiz/online-library/tree/lab3) |
-| 4 | Пакування застосунку в Helm-чарт (dev/prod, хук, helm test) | [`lab4`](https://github.com/1nxiz/online-library/tree/lab4) ← ви тут |
-| 5 | GitOps: розгортання через Argo CD (App of Apps, selfHeal, revert) | [`lab5`](https://github.com/1nxiz/online-library/tree/lab5) |
+| 4 | Пакування застосунку в Helm-чарт (dev/prod, хук, helm test) | [`lab4`](https://github.com/1nxiz/online-library/tree/lab4) |
+| 5 | GitOps: розгортання через Argo CD (App of Apps, selfHeal, revert) | [`lab5`](https://github.com/1nxiz/online-library/tree/lab5) ← ви тут |
 | 6 | Progressive delivery: canary з Argo Rollouts | [`lab6`](https://github.com/1nxiz/online-library/tree/lab6) |
 | 7 | Observability: метрики, логи, дашборди й відкат за метриками | [`lab7`](https://github.com/1nxiz/online-library/tree/lab7) |
