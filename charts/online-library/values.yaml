@@ -1,0 +1,67 @@
+# Значення за замовчуванням = середовище розробки (dev)
+
+nameOverride: ""
+fullnameOverride: ""
+
+backend:
+  replicaCount: 2
+  progressDeadlineSeconds: 90
+  image:
+    repository: ghcr.io/1nxiz/online-library-backend
+    tag: "1.0.0" # порожньо -> appVersion з Chart.yaml
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 5000
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 256Mi }
+
+frontend:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/1nxiz/online-library-frontend
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  service:
+    type: NodePort
+    port: 80
+    nodePort: "" # порожньо -> Kubernetes обере порт сам (можна ставити реліз двічі)
+  resources:
+    requests: { cpu: 50m, memory: 32Mi }
+    limits: { cpu: 200m, memory: 128Mi }
+
+# параметри застосунку -> ConfigMap
+config:
+  appTitle: "Онлайн бібліотека (dev)"
+  logLevel: DEBUG
+  dbName: library
+  dbUser: library
+
+# чутливі дані -> Secret
+secret:
+  # ім'я вже створеного в кластері Secret з ключем DB_PASSWORD (тоді dbPassword ігнорується)
+  existingSecret: ""
+  # навчальний пароль для dev; для інших середовищ передавайте через --set
+  dbPassword: "dev-only-password"
+
+postgres:
+  image: postgres:16-alpine
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 256Mi }
+
+ingress:
+  enabled: false
+  className: nginx
+  host: library.local
+
+# ЛР-4 п.9b: хук pre-upgrade і тест релізу (helm test)
+hooks:
+  enabled: true
+tests:
+  enabled: true

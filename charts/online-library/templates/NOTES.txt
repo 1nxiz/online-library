@@ -1,0 +1,19 @@
+Онлайн бібліотека встановлена: реліз {{ .Release.Name }}, namespace {{ .Release.Namespace }}.
+Версія образу backend: {{ .Values.backend.image.tag | default .Chart.AppVersion }}
+
+Перевірити поди:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+
+Відкрити застосунок:
+{{- if .Values.ingress.enabled }}
+  1) додайте у hosts рядок:  127.0.0.1 {{ .Values.ingress.host }}
+  2) запустіть:              minikube tunnel
+  3) відкрийте:              http://{{ .Values.ingress.host }}
+{{- else if eq .Values.frontend.service.type "NodePort" }}
+  minikube service {{ include "library.componentName" (list . "frontend") }} -n {{ .Release.Namespace }}
+{{- else }}
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "library.componentName" (list . "frontend") }} 8080:{{ .Values.frontend.service.port }}
+  потім http://localhost:8080
+{{- end }}
+
+Тест релізу:  helm test {{ .Release.Name }} -n {{ .Release.Namespace }}

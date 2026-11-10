@@ -1,8 +1,8 @@
-# Онлайн бібліотека — ЛР-3. Розгортання застосунку в Kubernetes (minikube, kubectl)
+# Онлайн бібліотека — ЛР-4. Пакування застосунку в Helm-чарт (dev/prod, хук, helm test)
 
-Це гілка **`lab3`**: код станом на кінець лабораторної роботи №3. Звіт з усіма командами й місцями для скріншотів — [docs/LAB3.md](docs/LAB3.md).
+Це гілка **`lab4`**: код станом на кінець лабораторної роботи №4. Звіт з усіма командами й місцями для скріншотів — [docs/LAB4.md](docs/LAB4.md).
 
-Що саме додано в цій роботі, видно в порівнянні гілок: [lab2...lab3](https://github.com/1nxiz/online-library/compare/lab2...lab3).
+Що саме додано в цій роботі, видно в порівнянні гілок: [lab3...lab4](https://github.com/1nxiz/online-library/compare/lab3...lab4).
 
 ## Застосунок
 
@@ -23,19 +23,19 @@
 | `frontend/` | сторінка + ESLint/HTMLHint + тести (node:test) + Nginx |
 | `docker-compose.yml` | локальний запуск зі збіркою (ЛР-1) |
 | `docker-compose.ghcr.yml` | запуск опублікованих образів з GHCR |
-| `k8s/` | маніфести Kubernetes, по файлу на об'єкт **(нове)** |
-| `docs/LAB3.md` | звіт ЛР-3 |
+| `k8s/` | маніфести Kubernetes, по файлу на об'єкт |
+| `charts/online-library/` | Helm-чарт (values, values-dev, values-prod) **(нове)** |
+| `docs/LAB4.md` | звіт ЛР-4 |
 
-## Запуск ЛР-3
+## Запуск ЛР-4
 
 ```powershell
-minikube start --driver=docker
-minikube addons enable metrics-server; minikube addons enable ingress
-kubectl apply -f k8s/
-minikube service frontend -n online-library
+helm lint charts/online-library
+helm install library charts/online-library -n online-library --create-namespace
+helm test library -n online-library --logs
 ```
 
-Повний хід роботи — у [docs/LAB3.md](docs/LAB3.md).
+Повний хід роботи — у [docs/LAB4.md](docs/LAB4.md).
 
 ## Образи
 
@@ -46,8 +46,8 @@ minikube service frontend -n online-library
 | ЛР | Тема | Гілка |
 |---|---|---|
 | 2 | Continuous Integration (GitHub Actions, GHCR, Trivy, захист гілки) | [`lab2`](https://github.com/1nxiz/online-library/tree/lab2) |
-| 3 | Розгортання застосунку в Kubernetes (minikube, kubectl) | [`lab3`](https://github.com/1nxiz/online-library/tree/lab3) ← ви тут |
-| 4 | Пакування застосунку в Helm-чарт (dev/prod, хук, helm test) | [`lab4`](https://github.com/1nxiz/online-library/tree/lab4) |
+| 3 | Розгортання застосунку в Kubernetes (minikube, kubectl) | [`lab3`](https://github.com/1nxiz/online-library/tree/lab3) |
+| 4 | Пакування застосунку в Helm-чарт (dev/prod, хук, helm test) | [`lab4`](https://github.com/1nxiz/online-library/tree/lab4) ← ви тут |
 | 5 | GitOps: розгортання через Argo CD (App of Apps, selfHeal, revert) | [`lab5`](https://github.com/1nxiz/online-library/tree/lab5) |
 | 6 | Progressive delivery: canary з Argo Rollouts | [`lab6`](https://github.com/1nxiz/online-library/tree/lab6) |
 | 7 | Observability: метрики, логи, дашборди й відкат за метриками | [`lab7`](https://github.com/1nxiz/online-library/tree/lab7) |
