@@ -1,14 +1,18 @@
-# Значення для minikube під керуванням Argo CD (ЛР-5, ЛР-6).
+# Значення для minikube під керуванням Argo CD (ЛР-5, ЛР-6, ЛР-7).
 # Реліз робиться комітом: змініть backend.image.tag -> git commit -> git push.
 
 backend:
   image:
-    tag: "1.1.0" # <- ЗМІНЮВАТИ ТУТ для нового релізу (не latest)
+    tag: "2.0.0" # <- ЗМІНЮВАТИ ТУТ для нового релізу (ЛР-7: образ з /metrics)
   replicaCount: 2
+  # ЛР-7: «погана» поведінка. "0" — нормальна версія; "0.5" — половина запитів отримує 500
+  env:
+    - name: FAIL_RATE
+      value: "0"
 
 frontend:
   image:
-    tag: "1.1.0"
+    tag: "2.0.0"
   replicaCount: 2
   service:
     type: NodePort
@@ -38,7 +42,25 @@ hooks:
 tests:
   enabled: false
 
-# ЛР-6: backend розгортається через Argo Rollouts (canary, 4 репліки) замість Deployment
+# ЛР-6/7: backend через Argo Rollouts (canary). 5 реплік: setWeight 20 = рівно 1 canary-под
 rollout:
   enabled: true
-  replicaCount: 4
+  replicaCount: 5
+  # ЛР-7: рішення про реліз приймає аналіз метрик (ручної паузи з ЛР-6 більше немає)
+  analysis:
+    enabled: true
+  canary:
+    steps:
+      - setWeight: 20
+      - pause: { duration: 30s } # дати метрикам нового пода накопичитися
+      - analysis:
+          templates:
+            - templateName: online-library-success-rate # = <реліз>-success-rate
+      - setWeight: 60
+      - pause: { duration: 30s }
+
+# ЛР-7: ServiceMonitor + дашборд Grafana і алерт на частку 5xx
+metrics:
+  enabled: true
+alerts:
+  enabled: true

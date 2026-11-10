@@ -3,7 +3,8 @@ kind: Service
 metadata:
   name: {{ include "library.componentName" (list . "backend") }}
   labels:
-    {{- include "library.labels" . | nindent 4 }}
+    # мітка component потрібна ServiceMonitor (ЛР-7), щоб вибрати саме backend
+    {{- include "library.componentLabels" (list . "backend") | nindent 4 }}
 spec:
   type: {{ .Values.backend.service.type }}
   selector:

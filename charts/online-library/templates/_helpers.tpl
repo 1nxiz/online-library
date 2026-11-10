@@ -86,6 +86,11 @@ spec:
       ports:
         - name: http
           containerPort: 5000
+      {{- with .Values.backend.env }}
+      # ЛР-7: довільні змінні оточення з values (наприклад FAIL_RATE)
+      env:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       envFrom:
         - configMapRef:
             name: {{ include "library.componentName" (list . "config") }}

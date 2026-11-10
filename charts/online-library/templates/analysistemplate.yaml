@@ -1,0 +1,24 @@
+{{- /* ЛР-7: Argo Rollouts питає Prometheus про частку успішних (не 5xx) запитів */}}
+{{- if and .Values.rollout.enabled .Values.rollout.analysis.enabled }}
+{{- $sel := .Values.rollout.analysis.selector }}
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ include "library.componentName" (list . "success-rate") }}
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+spec:
+  metrics:
+    - name: success-rate
+      interval: 30s # вимір кожні 30 с
+      count: 4 # усього 4 виміри (2 хв)
+      failureLimit: 1 # 2-й невдалий вимір -> AnalysisRun Failed -> abort
+      successCondition: result[0] >= {{ .Values.rollout.analysis.successThreshold }}
+      provider:
+        prometheus:
+          address: {{ .Values.rollout.analysis.prometheusAddress }}
+          query: |
+            sum(rate(http_requests_total{ {{- $sel -}},status!~"5.."}[1m]))
+            /
+            sum(rate(http_requests_total{ {{- $sel -}} }[1m]))
+{{- end }}

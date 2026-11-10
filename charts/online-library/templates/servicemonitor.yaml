@@ -1,0 +1,20 @@
+{{- /* ЛР-7: Prometheus Operator знаходить backend і збирає /metrics кожні 15 с */}}
+{{- if .Values.metrics.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "library.componentName" (list . "backend") }}
+  labels:
+    {{- include "library.componentLabels" (list . "backend") | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "library.selectorLabels" (list . "backend") | nindent 6 }}
+  # хеш шаблону пода від Argo Rollouts стає міткою метрик: видно, яка ревізія (stable/canary) відповідає
+  podTargetLabels:
+    - rollouts-pod-template-hash
+  endpoints:
+    - port: http # ім'я порту в Service backend
+      path: {{ .Values.metrics.path }}
+      interval: {{ .Values.metrics.interval }}
+{{- end }}

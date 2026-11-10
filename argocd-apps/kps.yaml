@@ -1,0 +1,57 @@
+# ЛР-7: kube-prometheus-stack — Prometheus, Alertmanager, Grafana (+ CRD ServiceMonitor, PrometheusRule)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kps # назва Application = назва релізу
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1" # раніше за застосунок: його ServiceMonitor потребує CRD
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 93.1.1
+    helm:
+      valuesObject:
+        fullnameOverride: kps # короткі імена сервісів: kps-prometheus, kps-grafana
+        # компоненти control plane minikube недоступні для скрейпу — вимикаємо, щоб не було шуму
+        kubeEtcd: { enabled: false }
+        kubeControllerManager: { enabled: false }
+        kubeScheduler: { enabled: false }
+        kubeProxy: { enabled: false }
+        # менше рухомих частин: без admission webhook і його TLS-джобів
+        prometheusOperator:
+          admissionWebhooks: { enabled: false }
+          tls: { enabled: false }
+        prometheus:
+          prometheusSpec:
+            retention: 2d
+            # підхоплювати ServiceMonitor/PodMonitor/PrometheusRule з усіх namespace без мітки release
+            serviceMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelectorNilUsesHelmValues: false
+            ruleSelectorNilUsesHelmValues: false
+        grafana:
+          admin:
+            existingSecret: grafana-admin # пароль не в Git: Secret створюється вручну
+            userKey: admin-user
+            passwordKey: admin-password
+          sidecar:
+            dashboards:
+              searchNamespace: ALL # шукати ConfigMap-и з дашбордами в усіх namespace
+          additionalDataSources:
+            - name: Loki
+              uid: loki
+              type: loki
+              access: proxy
+              url: http://loki-gateway.monitoring
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true # CRD цього чарта завеликі для звичайного kubectl apply

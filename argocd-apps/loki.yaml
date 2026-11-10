@@ -1,0 +1,47 @@
+# ЛР-7: Loki в режимі одного процесу (Monolithic, колишній SingleBinary), файлове сховище
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    # з березня 2026 чарт Loki підтримує спільнота — окремий репозиторій grafana-community
+    repoURL: https://grafana-community.github.io/helm-charts
+    chart: loki
+    targetRevision: 21.1.1
+    helm:
+      valuesObject:
+        # у чарті 21.x режим SingleBinary перейменовано на Monolithic;
+        # ключа minio схема чарта вже не приймає, тому його тут немає
+        deploymentMode: Monolithic
+        loki:
+          auth_enabled: false
+          commonConfig: { replication_factor: 1 }
+          storage: { type: filesystem }
+          schemaConfig:
+            configs:
+              - from: "2024-01-01"
+                store: tsdb
+                object_store: filesystem
+                schema: v13
+                index: { prefix: index_, period: 24h }
+        singleBinary: { replicas: 1 }
+        read: { replicas: 0 }
+        write: { replicas: 0 }
+        backend: { replicas: 0 }
+        chunksCache: { enabled: false }
+        resultsCache: { enabled: false }
+        lokiCanary: { enabled: false }
+        test: { enabled: false }
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]
