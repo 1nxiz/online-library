@@ -1,6 +1,8 @@
-# Онлайн бібліотека — ЛР-2. Continuous Integration (GitHub Actions, GHCR, Trivy, захист гілки)
+# Онлайн бібліотека — ЛР-3. Розгортання застосунку в Kubernetes (minikube, kubectl)
 
-Це гілка **`lab2`**: код станом на кінець лабораторної роботи №2. Звіт з усіма командами й місцями для скріншотів — [docs/LAB2.md](docs/LAB2.md).
+Це гілка **`lab3`**: код станом на кінець лабораторної роботи №3. Звіт з усіма командами й місцями для скріншотів — [docs/LAB3.md](docs/LAB3.md).
+
+Що саме додано в цій роботі, видно в порівнянні гілок: [lab2...lab3](https://github.com/1nxiz/online-library/compare/lab2...lab3).
 
 ## Застосунок
 
@@ -16,25 +18,24 @@
 
 | Шлях | Призначення |
 |---|---|
-| `.github/workflows/ci.yml` | CI: lint, build, test, образи, Trivy, публікація в GHCR **(нове)** |
-| `backend/` | Flask API + тести (pytest) + Ruff **(нове)** |
-| `frontend/` | сторінка + ESLint/HTMLHint + тести (node:test) + Nginx **(нове)** |
-| `docker-compose.yml` | локальний запуск зі збіркою (ЛР-1) **(нове)** |
-| `docker-compose.ghcr.yml` | запуск опублікованих образів з GHCR **(нове)** |
-| `docs/LAB2.md` | звіт ЛР-2 |
+| `.github/workflows/ci.yml` | CI: lint, build, test, образи, Trivy, публікація в GHCR |
+| `backend/` | Flask API + тести (pytest) + Ruff |
+| `frontend/` | сторінка + ESLint/HTMLHint + тести (node:test) + Nginx |
+| `docker-compose.yml` | локальний запуск зі збіркою (ЛР-1) |
+| `docker-compose.ghcr.yml` | запуск опублікованих образів з GHCR |
+| `k8s/` | маніфести Kubernetes, по файлу на об'єкт **(нове)** |
+| `docs/LAB3.md` | звіт ЛР-3 |
 
-## Запуск ЛР-2
-
-Пайплайн запускається сам на push у `main`, на Pull Request у `main` і на git-теги `v*`
-(релізи). Локальна перевірка:
+## Запуск ЛР-3
 
 ```powershell
-docker compose up --build            # http://localhost:8080
-cd backend;  pip install -r requirements-dev.txt; ruff check .; pytest -v
-cd ..\frontend; npm ci; npm run lint; npm run build; npm test
+minikube start --driver=docker
+minikube addons enable metrics-server; minikube addons enable ingress
+kubectl apply -f k8s/
+minikube service frontend -n online-library
 ```
 
-Повний хід роботи — у [docs/LAB2.md](docs/LAB2.md).
+Повний хід роботи — у [docs/LAB3.md](docs/LAB3.md).
 
 ## Образи
 
@@ -44,8 +45,8 @@ cd ..\frontend; npm ci; npm run lint; npm run build; npm test
 
 | ЛР | Тема | Гілка |
 |---|---|---|
-| 2 | Continuous Integration (GitHub Actions, GHCR, Trivy, захист гілки) | [`lab2`](https://github.com/1nxiz/online-library/tree/lab2) ← ви тут |
-| 3 | Розгортання застосунку в Kubernetes (minikube, kubectl) | [`lab3`](https://github.com/1nxiz/online-library/tree/lab3) |
+| 2 | Continuous Integration (GitHub Actions, GHCR, Trivy, захист гілки) | [`lab2`](https://github.com/1nxiz/online-library/tree/lab2) |
+| 3 | Розгортання застосунку в Kubernetes (minikube, kubectl) | [`lab3`](https://github.com/1nxiz/online-library/tree/lab3) ← ви тут |
 | 4 | Пакування застосунку в Helm-чарт (dev/prod, хук, helm test) | [`lab4`](https://github.com/1nxiz/online-library/tree/lab4) |
 | 5 | GitOps: розгортання через Argo CD (App of Apps, selfHeal, revert) | [`lab5`](https://github.com/1nxiz/online-library/tree/lab5) |
 | 6 | Progressive delivery: canary з Argo Rollouts | [`lab6`](https://github.com/1nxiz/online-library/tree/lab6) |
