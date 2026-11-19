@@ -32,6 +32,19 @@
 
 ## Запуск ЛР-5
 
+**Найпростіше — покроковий скрипт** (сам виконує всі команди, редагує values, робить commit/push і зупиняється там, де потрібен скріншот):
+
+```powershell
+git checkout lab5
+git pull
+powershell -ExecutionPolicy Bypass -File scripts\lab5.ps1
+```
+
+Скрипт не потребує `argocd.exe` / `kubectl-argo-rollouts.exe` / `helm.exe` (їх блокує Smart App Control): Argo Rollouts і Helm запускаються в Docker, решта — через `kubectl` і браузер.
+
+Вручну:
+
+
 Argo CD стежить саме за цією гілкою (`targetRevision: lab5`), тому всі коміти ЛР-5
 робіть у ній: `git checkout lab5`.
 
