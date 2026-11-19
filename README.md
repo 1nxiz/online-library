@@ -34,6 +34,19 @@
 
 ## Запуск ЛР-6
 
+**Найпростіше — покроковий скрипт** (сам виконує всі команди, редагує values, робить commit/push і зупиняється там, де потрібен скріншот):
+
+```powershell
+git checkout lab6
+git pull
+powershell -ExecutionPolicy Bypass -File scripts\lab6.ps1
+```
+
+Скрипт не потребує `argocd.exe` / `kubectl-argo-rollouts.exe` / `helm.exe` (їх блокує Smart App Control): Argo Rollouts і Helm запускаються в Docker, решта — через `kubectl` і браузер.
+
+Вручну:
+
+
 Argo CD стежить саме за цією гілкою (`targetRevision: lab6`), тому всі коміти ЛР-6
 робіть у ній: `git checkout lab6`, потім `kubectl apply -f bootstrap/root-app.yaml`
 (root перемкнеться з `lab5` на `lab6`).
