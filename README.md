@@ -40,6 +40,19 @@
 
 ## Запуск ЛР-7
 
+**Найпростіше — покроковий скрипт** (сам виконує всі команди, редагує values, робить commit/push і зупиняється там, де потрібен скріншот):
+
+```powershell
+git checkout lab7
+git pull
+powershell -ExecutionPolicy Bypass -File scripts\lab7.ps1
+```
+
+Скрипт не потребує `argocd.exe` / `kubectl-argo-rollouts.exe` / `helm.exe` (їх блокує Smart App Control): Argo Rollouts і Helm запускаються в Docker, решта — через `kubectl` і браузер.
+
+Вручну:
+
+
 Argo CD стежить саме за цією гілкою (`targetRevision: lab7`), тому всі коміти ЛР-7
 робіть у ній: `git checkout lab7`. Стек важкий: minikube потрібен з 4 CPU і 8 ГБ.
 
