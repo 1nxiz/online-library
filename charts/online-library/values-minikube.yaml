@@ -3,12 +3,12 @@
 
 backend:
   image:
-    tag: "1.0.0" # <- ЗМІНЮВАТИ ТУТ для нового релізу (не latest)
+    tag: "1.1.0" # <- ЗМІНЮВАТИ ТУТ для нового релізу (не latest)
   replicaCount: 2
 
 frontend:
   image:
-    tag: "1.0.0"
+    tag: "1.1.0"
   replicaCount: 2
   service:
     type: NodePort
