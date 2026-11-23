@@ -76,3 +76,26 @@ def test_ensure_table_is_idempotent(monkeypatch):
         assert server.ensure_table(retries=3, delay=0)
         names = boto3.client("dynamodb").list_tables()["TableNames"]
         assert names == ["Books"]
+
+
+def test_fail_rate_and_delay_skip_health(running_server, monkeypatch):
+    monkeypatch.setattr(server, "FAIL_RATE", 1.0)
+    monkeypatch.setattr(server, "DELAY_MS", 0)
+    status, _, body = request("GET", f"{running_server}/books")
+    assert status == 500 and body == {"error": "injected failure"}
+    assert request("GET", f"{running_server}/health")[0] == 200
+
+
+def test_requests_are_recorded_in_metrics(running_server, monkeypatch):
+    recorded = []
+
+    class Recorder:
+        def record(self, status, ms):
+            recorded.append((status, ms))
+
+    monkeypatch.setattr(server, "metrics", Recorder())
+    monkeypatch.setattr(server, "DELAY_MS", 30)
+    request("GET", f"{running_server}/books")
+    request("GET", f"{running_server}/health")  # службовий шлях не рахується
+    assert len(recorded) == 1
+    assert recorded[0][0] == 200 and recorded[0][1] >= 30

@@ -1,8 +1,8 @@
-# Онлайн бібліотека — ЛР-9. Балансування навантаження: 3 екземпляри за nginx
+# Онлайн бібліотека — ЛР-10. Метрики CloudWatch у LocalStack: PutMetricData, Alarm, графіки
 
-Це гілка **`lab9`**: код станом на кінець лабораторної роботи №9. Звіт з усіма командами й місцями для скріншотів — [docs/LAB9.md](docs/LAB9.md).
+Це гілка **`lab10`**: код станом на кінець лабораторної роботи №10. Звіт з усіма командами й місцями для скріншотів — [docs/LAB10.md](docs/LAB10.md).
 
-Що саме додано в цій роботі, видно в порівнянні гілок: [lab8...lab9](https://github.com/1nxiz/online-library/compare/lab8...lab9).
+Що саме додано в цій роботі, видно в порівнянні гілок: [lab9...lab10](https://github.com/1nxiz/online-library/compare/lab9...lab10).
 
 ## Serverless-версія (ЛР-8…10)
 
@@ -43,18 +43,20 @@
 | `aws/docker-compose.yml` | LocalStack 4.14.0 (емулятор AWS) |
 | `aws/lambda/handler.py` | Lambda-функція: CRUD книг у DynamoDB |
 | `aws/deploy.ps1, aws/deploy.sh` | сценарій AWS CLI: DynamoDB, IAM, Lambda, API Gateway |
-| `aws/app/` | контейнерна версія застосунку (той самий handler.py) **(нове)** |
-| `aws/nginx/nginx.conf` | балансувальник round-robin на 3 екземпляри **(нове)** |
-| `docs/LAB9.md` | звіт ЛР-9 |
+| `aws/app/` | контейнерна версія застосунку (той самий handler.py) |
+| `aws/nginx/nginx.conf` | балансувальник round-robin на 3 екземпляри |
+| `aws/app/metrics.py` | публікація метрик через PutMetricData **(нове)** |
+| `aws/cloudwatch/` | аналіз метрик (GetMetricData) і графіки **(нове)** |
+| `docs/LAB10.md` | звіт ЛР-10 |
 
-## Запуск ЛР-9
+## Запуск ЛР-10
 
 **Найпростіше — покроковий скрипт** (сам виконує всі команди і зупиняється там, де потрібен скріншот):
 
 ```powershell
-git checkout lab9
+git checkout lab10
 git pull
-powershell -ExecutionPolicy Bypass -File scripts\lab9.ps1
+powershell -ExecutionPolicy Bypass -File scripts\lab10.ps1
 ```
 
 Потрібен лише Docker Desktop: LocalStack, AWS CLI і nginx запускаються в контейнерах.
@@ -63,10 +65,9 @@ powershell -ExecutionPolicy Bypass -File scripts\lab9.ps1
 
 ```powershell
 docker compose -f aws/docker-compose.yml up -d --build
-Invoke-RestMethod http://localhost:8080/health   # повторіть кілька разів: instance змінюється
 ```
 
-Повний хід роботи — у [docs/LAB9.md](docs/LAB9.md).
+Повний хід роботи — у [docs/LAB10.md](docs/LAB10.md).
 
 ## Усі лабораторні
 
@@ -79,5 +80,5 @@ Invoke-RestMethod http://localhost:8080/health   # повторіть кільк
 | 6 | Progressive delivery: canary з Argo Rollouts | [`lab6`](https://github.com/1nxiz/online-library/tree/lab6) |
 | 7 | Observability: метрики, логи, дашборди й відкат за метриками | [`lab7`](https://github.com/1nxiz/online-library/tree/lab7) |
 | 8 | Serverless у LocalStack: Lambda, API Gateway, DynamoDB | [`lab8`](https://github.com/1nxiz/online-library/tree/lab8) |
-| 9 | Балансування навантаження: 3 екземпляри за nginx | [`lab9`](https://github.com/1nxiz/online-library/tree/lab9) ← ви тут |
-| 10 | Метрики CloudWatch у LocalStack: PutMetricData, Alarm, графіки | [`lab10`](https://github.com/1nxiz/online-library/tree/lab10) |
+| 9 | Балансування навантаження: 3 екземпляри за nginx | [`lab9`](https://github.com/1nxiz/online-library/tree/lab9) |
+| 10 | Метрики CloudWatch у LocalStack: PutMetricData, Alarm, графіки | [`lab10`](https://github.com/1nxiz/online-library/tree/lab10) ← ви тут |

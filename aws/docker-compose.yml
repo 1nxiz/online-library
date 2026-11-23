@@ -1,5 +1,6 @@
 # ЛР-8: LocalStack (Lambda, API Gateway, DynamoDB).
 # ЛР-9: + три екземпляри застосунку і nginx-балансувальник.
+# ЛР-10: + метрики в CloudWatch (METRICS_ENABLED), керовані збої FAIL_RATE / DELAY_MS, утиліта analyze.
 # Образ LocalStack 4.14.0 — останній вільний образ спільноти, працює без акаунта й токена.
 name: online-library-aws
 
@@ -14,6 +15,10 @@ x-app: &app
     AWS_SECRET_ACCESS_KEY: test
     AWS_DEFAULT_REGION: us-east-1
     TABLE_NAME: Books
+    METRICS_ENABLED: "true" # ЛР-10: PutMetricData кожні 10 с
+    METRICS_FLUSH_SECONDS: "10"
+    FAIL_RATE: ${FAIL_RATE:-0} # частка штучних 500 (0..1)
+    DELAY_MS: ${DELAY_MS:-0} # штучна затримка, мс
   depends_on:
     localstack:
       condition: service_healthy
@@ -89,6 +94,23 @@ services:
       app3: { condition: service_healthy }
     networks:
       library: { ipv4_address: 172.30.0.20 }
+
+  # ЛР-10: аналіз метрик (запускається вручну: docker compose run --rm analyze)
+  analyze:
+    build:
+      context: .
+      dockerfile: cloudwatch/Dockerfile
+    image: online-library-aws-analyze:local
+    profiles: ["tools"]
+    environment:
+      AWS_ENDPOINT_URL: http://localstack:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - ./out:/out
+    networks:
+      library: {}
 
 networks:
   library:
