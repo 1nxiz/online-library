@@ -1,0 +1,29 @@
+# ЛР-8: локальне AWS-середовище (LocalStack).
+# Образ 4.14.0 — останній вільний образ спільноти LocalStack, працює без акаунта й токена
+# (новіші образи з 23.03.2026 вимагають LOCALSTACK_AUTH_TOKEN).
+name: online-library-aws
+
+services:
+  localstack:
+    image: localstack/localstack:4.14.0
+    container_name: localstack
+    ports:
+      - "127.0.0.1:4566:4566" # єдина точка входу до всіх AWS API
+    environment:
+      SERVICES: lambda,apigateway,dynamodb,iam,sts,logs,cloudwatch
+      AWS_DEFAULT_REGION: us-east-1
+      # Lambda запускається в окремих контейнерах у цій самій мережі
+      LAMBDA_DOCKER_NETWORK: library-aws
+      # перший запуск тягне образ середовища python3.12 — даємо більше часу
+      LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT: "120"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # LocalStack створює контейнери Lambda
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+networks:
+  default:
+    name: library-aws

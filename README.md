@@ -1,18 +1,22 @@
-# Онлайн бібліотека — ЛР-7. Observability: метрики, логи, дашборди й відкат за метриками
+# Онлайн бібліотека — ЛР-8. Serverless у LocalStack: Lambda, API Gateway, DynamoDB
 
-Це гілка **`lab7`**: код станом на кінець лабораторної роботи №7. Звіт з усіма командами й місцями для скріншотів — [docs/LAB7.md](docs/LAB7.md).
+Це гілка **`lab8`**: код станом на кінець лабораторної роботи №8. Звіт з усіма командами й місцями для скріншотів — [docs/LAB8.md](docs/LAB8.md).
 
-Що саме додано в цій роботі, видно в порівнянні гілок: [lab6...lab7](https://github.com/1nxiz/online-library/compare/lab6...lab7).
+Що саме додано в цій роботі, видно в порівнянні гілок: [lab7...lab8](https://github.com/1nxiz/online-library/compare/lab7...lab8).
 
-## Застосунок
+## Serverless-версія (ЛР-8…10)
+
+Той самий каталог книг у вигляді Lambda-функції (`aws/lambda/handler.py`) з даними в DynamoDB, розгорнутий у LocalStack. Маршрути: `GET /health`, `GET/POST /books`, `GET/DELETE /books/{id}`.
+
+## Застосунок (Kubernetes-версія, ЛР-2…7)
 
 | Сервіс | Стек | Порт | Що робить |
 |---|---|---|---|
 | `frontend` | HTML/JS + Nginx | 80 | сторінка каталогу; проксує `/api/*` на backend |
-| `backend` | Python 3.12, Flask, Gunicorn | 5000 | REST API книг, `/metrics` |
+| `backend` | Python 3.12, Flask, Gunicorn | 5000 | REST API книг |
 | `db` | PostgreSQL 16 | 5432 | зберігає книги |
 
-Ендпоінти backend: `/health`, `/version`, `/api/info`, `/api/books` (GET/POST, пошук `?q=`), `/api/books/<id>/borrow`, `/api/books/<id>/return`, `DELETE /api/books/<id>`, `/metrics` (Prometheus).
+Ендпоінти backend: `/health`, `/version`, `/api/info`, `/api/books` (GET/POST, пошук `?q=`), `/api/books/<id>/borrow`, `/api/books/<id>/return`, `DELETE /api/books/<id>`.
 
 ## Що лежить у гілці
 
@@ -30,43 +34,37 @@
 | `argocd-apps/online-library.yaml` | Application застосунку |
 | `argocd-apps/argo-rollouts.yaml` | контролер Argo Rollouts з Git |
 | `charts/online-library/templates/backend-rollout.yaml` | Rollout (canary) замість Deployment |
-| `argocd-apps/kps.yaml, loki.yaml, alloy.yaml` | Prometheus + Grafana, Loki, Alloy з Git **(нове)** |
-| `charts/online-library/templates/servicemonitor.yaml` | збір метрик backend **(нове)** |
-| `charts/online-library/dashboards/online-library.json` | дашборд Grafana (через ConfigMap) **(нове)** |
-| `charts/online-library/templates/analysistemplate.yaml` | аналіз частки успішних запитів **(нове)** |
-| `charts/online-library/templates/prometheusrule.yaml` | алерт на частку 5xx > 5% **(нове)** |
-| `load/` | генератори навантаження **(нове)** |
-| `docs/LAB7.md` | звіт ЛР-7 |
+| `argocd-apps/kps.yaml, loki.yaml, alloy.yaml` | Prometheus + Grafana, Loki, Alloy з Git |
+| `charts/online-library/templates/servicemonitor.yaml` | збір метрик backend |
+| `charts/online-library/dashboards/online-library.json` | дашборд Grafana (через ConfigMap) |
+| `charts/online-library/templates/analysistemplate.yaml` | аналіз частки успішних запитів |
+| `charts/online-library/templates/prometheusrule.yaml` | алерт на частку 5xx > 5% |
+| `load/` | генератори навантаження |
+| `aws/docker-compose.yml` | LocalStack 4.14.0 (емулятор AWS) **(нове)** |
+| `aws/lambda/handler.py` | Lambda-функція: CRUD книг у DynamoDB **(нове)** |
+| `aws/deploy.ps1, aws/deploy.sh` | сценарій AWS CLI: DynamoDB, IAM, Lambda, API Gateway **(нове)** |
+| `docs/LAB8.md` | звіт ЛР-8 |
 
-## Запуск ЛР-7
+## Запуск ЛР-8
 
-**Найпростіше — покроковий скрипт** (сам виконує всі команди, редагує values, робить commit/push і зупиняється там, де потрібен скріншот):
+**Найпростіше — покроковий скрипт** (сам виконує всі команди і зупиняється там, де потрібен скріншот):
 
 ```powershell
-git checkout lab7
+git checkout lab8
 git pull
-powershell -ExecutionPolicy Bypass -File scripts\lab7.ps1
+powershell -ExecutionPolicy Bypass -File scripts\lab8.ps1
 ```
 
-Скрипт не потребує `argocd.exe` / `kubectl-argo-rollouts.exe` / `helm.exe` (їх блокує Smart App Control): Argo Rollouts і Helm запускаються в Docker, решта — через `kubectl` і браузер.
+Потрібен лише Docker Desktop: LocalStack, AWS CLI і nginx запускаються в контейнерах.
 
 Вручну:
 
-
-Argo CD стежить саме за цією гілкою (`targetRevision: lab7`), тому всі коміти ЛР-7
-робіть у ній: `git checkout lab7`. Стек важкий: minikube потрібен з 4 CPU і 8 ГБ.
-
 ```powershell
-minikube delete; minikube start --cpus 4 --memory 8192
-# Argo CD, два Secret і root — див. docs/LAB7.md, розділ 2.1
-kubectl apply -f bootstrap/root-app.yaml
+docker compose -f aws/docker-compose.yml up -d
+powershell -ExecutionPolicy Bypass -File aws\deploy.ps1
 ```
 
-Повний хід роботи — у [docs/LAB7.md](docs/LAB7.md).
-
-## Образи
-
-`ghcr.io/1nxiz/online-library-backend` і `ghcr.io/1nxiz/online-library-frontend`. Версії створює CI при публікації релізу (git-тега `vX.Y.Z`); для ЛР-7 потрібні **2.0.0** і **2.1.0**, створені з гілки `lab7`.
+Повний хід роботи — у [docs/LAB8.md](docs/LAB8.md).
 
 ## Усі лабораторні
 
@@ -77,4 +75,7 @@ kubectl apply -f bootstrap/root-app.yaml
 | 4 | Пакування застосунку в Helm-чарт (dev/prod, хук, helm test) | [`lab4`](https://github.com/1nxiz/online-library/tree/lab4) |
 | 5 | GitOps: розгортання через Argo CD (App of Apps, selfHeal, revert) | [`lab5`](https://github.com/1nxiz/online-library/tree/lab5) |
 | 6 | Progressive delivery: canary з Argo Rollouts | [`lab6`](https://github.com/1nxiz/online-library/tree/lab6) |
-| 7 | Observability: метрики, логи, дашборди й відкат за метриками | [`lab7`](https://github.com/1nxiz/online-library/tree/lab7) ← ви тут |
+| 7 | Observability: метрики, логи, дашборди й відкат за метриками | [`lab7`](https://github.com/1nxiz/online-library/tree/lab7) |
+| 8 | Serverless у LocalStack: Lambda, API Gateway, DynamoDB | [`lab8`](https://github.com/1nxiz/online-library/tree/lab8) ← ви тут |
+| 9 | Балансування навантаження: 3 екземпляри за nginx | [`lab9`](https://github.com/1nxiz/online-library/tree/lab9) |
+| 10 | Метрики CloudWatch у LocalStack: PutMetricData, Alarm, графіки | [`lab10`](https://github.com/1nxiz/online-library/tree/lab10) |
