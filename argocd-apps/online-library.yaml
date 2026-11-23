@@ -21,7 +21,7 @@ spec:
   syncPolicy:
     automated:
       prune: true # видаляти з кластера те, що прибрали з Git
-      selfHeal: false # повертати ручні зміни (для демо дрейфу спершу false)
+      selfHeal: true # повертати ручні зміни (для демо дрейфу спершу false)
     syncOptions:
       - CreateNamespace=true
     retry:
