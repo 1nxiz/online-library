@@ -41,8 +41,8 @@ WaitFor 'Lambda відповідає на /health' { (Api 'GET' "$Base/health" $
 Invoke-RestMethod -Uri "$Base/health" | Format-List
 
 # JSON з \u-послідовностями: лише ASCII, тому не залежить від кодування Windows PowerShell
-$book1 = '{"title":"Кобзар","author":"Тарас Шевченко","year":1840}'
-$book2 = '{"title":"Лісова пісня","author":"Леся Українка","year":1911}'
+$book1 = '{"title":"\u041a\u043e\u0431\u0437\u0430\u0440","author":"\u0422\u0430\u0440\u0430\u0441 \u0428\u0435\u0432\u0447\u0435\u043d\u043a\u043e","year":1840}'
+$book2 = '{"title":"\u041b\u0456\u0441\u043e\u0432\u0430 \u043f\u0456\u0441\u043d\u044f","author":"\u041b\u0435\u0441\u044f \u0423\u043a\u0440\u0430\u0457\u043d\u043a\u0430","year":1911}'
 Show "Invoke-RestMethod -Method POST $Base/books -Body <Кобзар>"
 $b1 = Invoke-RestMethod -Method POST -Uri "$Base/books" -Body $book1 -ContentType 'application/json'
 $b1 | Format-List
@@ -67,7 +67,7 @@ Write-Host "  POST без назви -> HTTP $($bad.Status)"
 Shot '8.8' 'термінал: DELETE -> 204, повторний GET -> 404, некоректний POST -> 400'
 
 Say '7. HTTP-клієнт curl (п.6)'
-Set-Content -Encoding ascii "$AwsDir\build\book3.json" '{"title":"Тіні забутих предків","author":"Михайло Коцюбинський","year":1911}'
+Set-Content -Encoding ascii "$AwsDir\build\book3.json" '{"title":"\u0422\u0456\u043d\u0456 \u0437\u0430\u0431\u0443\u0442\u0438\u0445 \u043f\u0440\u0435\u0434\u043a\u0456\u0432","author":"\u041c\u0438\u0445\u0430\u0439\u043b\u043e \u041a\u043e\u0446\u044e\u0431\u0438\u043d\u0441\u044c\u043a\u0438\u0439","year":1911}'
 Run "curl.exe -s -i -X POST -H 'Content-Type: application/json' --data-binary '@aws/build/book3.json' $Base/books"
 Write-Host ''
 Run "curl.exe -s -i $Base/health"
