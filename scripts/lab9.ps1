@@ -73,7 +73,7 @@ Measure-Requests 'nginx, app2 відновлено' "$Lb/health" 30
 Shot '9.7' 'термінал: app2 знову отримує запити — розподіл на 3 екземпляри'
 
 Say '7. Спільні дані: екземпляри без стану (stateless)'
-$book = '{"title":"Кобзар","author":"Тарас Шевченко","year":1840}'
+$book = '{"title":"\u041a\u043e\u0431\u0437\u0430\u0440","author":"\u0422\u0430\u0440\u0430\u0441 \u0428\u0435\u0432\u0447\u0435\u043d\u043a\u043e","year":1840}'
 Show "Invoke-RestMethod -Method POST $Lb/books"
 $created = Invoke-RestMethod -Method POST -Uri "$Lb/books" -Body $book -ContentType 'application/json'
 $created | Format-List id, title, author
