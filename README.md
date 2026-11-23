@@ -1,8 +1,8 @@
-# Онлайн бібліотека — ЛР-8. Serverless у LocalStack: Lambda, API Gateway, DynamoDB
+# Онлайн бібліотека — ЛР-9. Балансування навантаження: 3 екземпляри за nginx
 
-Це гілка **`lab8`**: код станом на кінець лабораторної роботи №8. Звіт з усіма командами й місцями для скріншотів — [docs/LAB8.md](docs/LAB8.md).
+Це гілка **`lab9`**: код станом на кінець лабораторної роботи №9. Звіт з усіма командами й місцями для скріншотів — [docs/LAB9.md](docs/LAB9.md).
 
-Що саме додано в цій роботі, видно в порівнянні гілок: [lab7...lab8](https://github.com/1nxiz/online-library/compare/lab7...lab8).
+Що саме додано в цій роботі, видно в порівнянні гілок: [lab8...lab9](https://github.com/1nxiz/online-library/compare/lab8...lab9).
 
 ## Serverless-версія (ЛР-8…10)
 
@@ -40,19 +40,21 @@
 | `charts/online-library/templates/analysistemplate.yaml` | аналіз частки успішних запитів |
 | `charts/online-library/templates/prometheusrule.yaml` | алерт на частку 5xx > 5% |
 | `load/` | генератори навантаження |
-| `aws/docker-compose.yml` | LocalStack 4.14.0 (емулятор AWS) **(нове)** |
-| `aws/lambda/handler.py` | Lambda-функція: CRUD книг у DynamoDB **(нове)** |
-| `aws/deploy.ps1, aws/deploy.sh` | сценарій AWS CLI: DynamoDB, IAM, Lambda, API Gateway **(нове)** |
-| `docs/LAB8.md` | звіт ЛР-8 |
+| `aws/docker-compose.yml` | LocalStack 4.14.0 (емулятор AWS) |
+| `aws/lambda/handler.py` | Lambda-функція: CRUD книг у DynamoDB |
+| `aws/deploy.ps1, aws/deploy.sh` | сценарій AWS CLI: DynamoDB, IAM, Lambda, API Gateway |
+| `aws/app/` | контейнерна версія застосунку (той самий handler.py) **(нове)** |
+| `aws/nginx/nginx.conf` | балансувальник round-robin на 3 екземпляри **(нове)** |
+| `docs/LAB9.md` | звіт ЛР-9 |
 
-## Запуск ЛР-8
+## Запуск ЛР-9
 
 **Найпростіше — покроковий скрипт** (сам виконує всі команди і зупиняється там, де потрібен скріншот):
 
 ```powershell
-git checkout lab8
+git checkout lab9
 git pull
-powershell -ExecutionPolicy Bypass -File scripts\lab8.ps1
+powershell -ExecutionPolicy Bypass -File scripts\lab9.ps1
 ```
 
 Потрібен лише Docker Desktop: LocalStack, AWS CLI і nginx запускаються в контейнерах.
@@ -60,11 +62,11 @@ powershell -ExecutionPolicy Bypass -File scripts\lab8.ps1
 Вручну:
 
 ```powershell
-docker compose -f aws/docker-compose.yml up -d
-powershell -ExecutionPolicy Bypass -File aws\deploy.ps1
+docker compose -f aws/docker-compose.yml up -d --build
+Invoke-RestMethod http://localhost:8080/health   # повторіть кілька разів: instance змінюється
 ```
 
-Повний хід роботи — у [docs/LAB8.md](docs/LAB8.md).
+Повний хід роботи — у [docs/LAB9.md](docs/LAB9.md).
 
 ## Усі лабораторні
 
@@ -76,6 +78,6 @@ powershell -ExecutionPolicy Bypass -File aws\deploy.ps1
 | 5 | GitOps: розгортання через Argo CD (App of Apps, selfHeal, revert) | [`lab5`](https://github.com/1nxiz/online-library/tree/lab5) |
 | 6 | Progressive delivery: canary з Argo Rollouts | [`lab6`](https://github.com/1nxiz/online-library/tree/lab6) |
 | 7 | Observability: метрики, логи, дашборди й відкат за метриками | [`lab7`](https://github.com/1nxiz/online-library/tree/lab7) |
-| 8 | Serverless у LocalStack: Lambda, API Gateway, DynamoDB | [`lab8`](https://github.com/1nxiz/online-library/tree/lab8) ← ви тут |
-| 9 | Балансування навантаження: 3 екземпляри за nginx | [`lab9`](https://github.com/1nxiz/online-library/tree/lab9) |
+| 8 | Serverless у LocalStack: Lambda, API Gateway, DynamoDB | [`lab8`](https://github.com/1nxiz/online-library/tree/lab8) |
+| 9 | Балансування навантаження: 3 екземпляри за nginx | [`lab9`](https://github.com/1nxiz/online-library/tree/lab9) ← ви тут |
 | 10 | Метрики CloudWatch у LocalStack: PutMetricData, Alarm, графіки | [`lab10`](https://github.com/1nxiz/online-library/tree/lab10) |
