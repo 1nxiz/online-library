@@ -3,7 +3,7 @@
 
 backend:
   image:
-    tag: "1.1.0" # <- ЗМІНЮВАТИ ТУТ для нового релізу (не latest)
+    tag: "9.9.9" # <- ЗМІНЮВАТИ ТУТ для нового релізу (не latest)
   replicaCount: 2
 
 frontend:
