@@ -26,9 +26,21 @@ if ($LASTEXITCODE -ne 0) {
 }
 Run 'kubectl apply -f bootstrap/root-app.yaml'
 Refresh 'root'
-foreach ($app in @('kps', 'loki', 'alloy', 'online-library')) {
+foreach ($app in @('kps', 'loki', 'alloy')) {
     WaitFor "$app : Synced / Healthy (перший раз 5–15 хв)" { (AppStatus $app) -eq 'Synced/Healthy' } 1500
 }
+# Аналіз canary (2.0.0) рахує частку успішних запитів: без трафіку Prometheus не має даних
+# і rollout переривається (Degraded). Тому навантаження вмикається ДО очікування online-library.
+Run 'kubectl apply -f load/load-generator.yaml'
+WaitFor 'online-library : Synced / Healthy (canary з аналізом ~3–5 хв)' {
+    if ((RolloutPhase) -eq 'Degraded') {
+        # перервану спробу (не було образу або метрик) — повторити: те саме, що kubectl argo rollouts retry
+        kubectl patch rollout online-library-backend -n online-library --subresource=status --type=merge -p '{\"status\":{\"abort\":false}}' *> $null
+        Write-Host ' [rollout перервано - повторюю]' -NoNewline -ForegroundColor Yellow
+        Start-Sleep -Seconds 20
+    }
+    (AppStatus 'online-library') -eq 'Synced/Healthy'
+} 1500
 Run 'kubectl get applications -n argocd'
 Start-Process 'https://localhost:8443/applications'
 Shot '7.1' 'браузер Argo CD: kps, loki, alloy, online-library — усі Synced / Healthy'
@@ -41,7 +53,7 @@ Ask "Увійдіть у Grafana: admin / $GrafanaPassword"
 Shot '7.3' 'браузер: Grafana після входу'
 
 Say '2. Навантаження (п.5) — потрібне для метрик і аналізу'
-Run 'kubectl apply -f load/load-generator.yaml'
+Run 'kubectl get deployment load'
 
 Say '3. Метрики (п.2)'
 kubectl delete pod m -n online-library --ignore-not-found *> $null
