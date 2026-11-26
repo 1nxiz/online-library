@@ -76,6 +76,9 @@ function EditFile($file, $expr) {
 function CommitPush($msg) {
     Show "git commit -am `"$msg`""
     git commit -am $msg
+    # якщо в GitHub є нові коміти (виправлення) — спершу підтягнути їх, інакше push буде rejected
+    Show 'git pull --rebase --autostash'
+    git pull --rebase --autostash
     Show 'git push'
     git push
 }
