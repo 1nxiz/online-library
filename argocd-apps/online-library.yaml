@@ -12,7 +12,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/1nxiz/online-library.git
-    targetRevision: main
+    targetRevision: lab7
     path: charts/online-library
     helm:
       valueFiles:
@@ -26,9 +26,9 @@ spec:
       selfHeal: true # повертати ручні зміни (для демо дрейфу спершу false)
     syncOptions:
       - CreateNamespace=true
-      - SkipDryRunOnMissingResource=true # Rollout CRD може з'явитися пізніше
+      - SkipDryRunOnMissingResource=true # CRD Rollout може з'явитися пізніше
     retry:
-      limit: 5
+      limit: 10 # ЛР-7: чекаємо, поки kps створить CRD ServiceMonitor/PrometheusRule
       backoff:
         duration: 10s
         factor: 2

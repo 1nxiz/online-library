@@ -1,0 +1,37 @@
+# ЛР-7: постійний фоновий трафік (НЕ частина чарта і не під Argo CD — запускається вручну)
+#   kubectl apply -f load/load-generator.yaml
+#   kubectl scale deployment load --replicas=3      # більше трафіку
+#   kubectl delete -f load/load-generator.yaml      # зупинити
+# Запити йдуть як від браузера: frontend (Nginx) -> /api/books -> backend -> PostgreSQL
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: load
+  namespace: default
+  labels:
+    app: load
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: load
+  template:
+    metadata:
+      labels:
+        app: load
+    spec:
+      containers:
+        - name: curl
+          image: curlimages/curl:8.11.1
+          command:
+            - sh
+            - -c
+            - |
+              while true; do
+                curl -s -o /dev/null http://online-library-frontend.online-library.svc/api/books
+                curl -s -o /dev/null "http://online-library-frontend.online-library.svc/api/books?q=a"
+                sleep 0.05
+              done
+          resources:
+            requests: { cpu: 20m, memory: 16Mi }
+            limits: { cpu: 200m, memory: 64Mi }

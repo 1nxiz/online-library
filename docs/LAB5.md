@@ -20,7 +20,6 @@
 
 **Швидкий Degraded:** у Deployment backend задано `progressDeadlineSeconds: 90`. Тому при неіснуючому тезі Argo CD покаже *Degraded* приблизно через 1,5 хвилини, а не через стандартні 10.
 
-> Файл `argocd-apps/argo-rollouts.yaml` і параметр `rollout.enabled` належать ЛР-6. У ЛР-5 `rollout.enabled: false`, тож backend — звичайний Deployment. Якщо хочете чисту історію комітів по лабораторних, додайте `argo-rollouts.yaml` окремим комітом на початку ЛР-6. Якщо файл уже є, він лише встановить контролер і не завадить.
 
 ## 2. Хід виконання (PowerShell)
 
@@ -29,7 +28,8 @@
 - Образи `1.0.0`, `1.1.0`, `1.2.0`, `1.3.0` опубліковані (ЛР-2) і пакети **Public**.
 - Реліз з ЛР-4 видалено (`helm uninstall library -n online-library`).
 - У `argocd-apps/*.yaml` і `bootstrap/root-app.yaml` `repoURL` вказує на `https://github.com/1nxiz/online-library.git`.
-- `values-minikube.yaml`: `backend.image.tag: "1.0.0"`, `rollout.enabled: false`. Закомітьте і запуште.
+- Працюйте в гілці `lab5` (`git checkout lab5`): `root` і `online-library` мають `targetRevision: lab5`, тож Argo CD бере зміни саме з неї.
+- `values-minikube.yaml`: `backend.image.tag: "1.0.0"`.
 
 ### 2.2. Встановлення Argo CD (п.3)
 

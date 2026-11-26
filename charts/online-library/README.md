@@ -70,3 +70,25 @@ helm install library-prod charts/online-library -n library-prod --create-namespa
 ```
 
 Пріоритет значень (від найнижчого): `values.yaml` чарта → файли `-f` (кожен наступний перекриває попередній) → `--set` / `--set-string`.
+
+## ЛР-7: спостережуваність
+
+| Шаблон / файл | Об'єкт | Умова |
+|---|---|---|
+| `templates/servicemonitor.yaml` | ServiceMonitor backend (`/metrics`, 15 с) | `metrics.enabled` |
+| `templates/dashboard.yaml` + `dashboards/online-library.json` | ConfigMap з міткою `grafana_dashboard: "1"` | `metrics.enabled` |
+| `templates/analysistemplate.yaml` | AnalysisTemplate `<реліз>-success-rate` (поріг 0.95) | `rollout.enabled` і `rollout.analysis.enabled` |
+| `templates/prometheusrule.yaml` | алерт `OnlineLibraryHighErrorRate` (> 5% 5xx протягом 1 хв) | `metrics.enabled` і `alerts.enabled` |
+
+| Параметр | Опис | За замовч. | values-minikube.yaml |
+|---|---|---|---|
+| `backend.env` | додаткові змінні оточення backend | `[]` | `FAIL_RATE: "0"` |
+| `metrics.enabled` / `.path` / `.interval` | ServiceMonitor і дашборд | false / `/metrics` / 15s | true |
+| `alerts.enabled` / `.errorRateThreshold` | PrometheusRule | false / 0.05 | true |
+| `rollout.replicaCount` | репліки Rollout | 4 | 5 |
+| `rollout.analysis.enabled` | AnalysisTemplate | false | true |
+| `rollout.analysis.prometheusAddress` | адреса Prometheus | `http://kps-prometheus.monitoring:9090` | — |
+| `rollout.analysis.selector` | фільтр запиту PromQL | `namespace="online-library"` | — |
+| `rollout.analysis.successThreshold` | поріг частки успішних запитів | 0.95 | — |
+
+`version` чарта піднято до `0.2.0` (нові шаблони), `appVersion` — до `2.0.0` (образ з `/metrics`).

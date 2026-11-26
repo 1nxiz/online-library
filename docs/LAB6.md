@@ -44,19 +44,22 @@ Blue-green кращий, коли дві версії **не можна** зап
 
 ## 2. Хід виконання (PowerShell)
 
-Стартовий стан після ЛР-5: Argo CD працює, `online-library` Synced/Healthy з тегом `1.1.0`.
+Стартовий стан після ЛР-5: Argo CD працює, `online-library` Synced/Healthy з тегом `1.1.0`. У гілці `lab6` в `values-minikube.yaml` теж тег `1.1.0`.
 
 ### 2.1. Контролер через Argo CD (п.1a)
 
+Усі коміти ЛР-6 робляться в гілці `lab6`. Перемкніть root з `lab5` на `lab6` — це єдиний ручний крок:
+
 ```powershell
-git add argocd-apps/argo-rollouts.yaml
-git commit -m "Install Argo Rollouts controller via Argo CD"
-git push
+git checkout lab6
+kubectl apply -f bootstrap/root-app.yaml      # targetRevision: lab6
 argocd app get root --refresh
-argocd app get argo-rollouts
+argocd app get argo-rollouts                  # з'явився новий Application: Synced / Healthy
 kubectl get pods -n argo-rollouts
 kubectl get crd | Select-String rollouts
 ```
+
+Root знайшов у `argocd-apps/` новий файл `argo-rollouts.yaml` і встановив контролер з офіційного Helm-чарта (sync-wave `-1`, тобто раніше за застосунок).
 
 ### 2.2. Плагін kubectl argo rollouts (п.1b)
 
@@ -67,13 +70,11 @@ $env:Path += ";C:\tools"     # постійно: Параметри систем
 kubectl argo rollouts version
 ```
 
-### 2.3. Увімкнути Rollout (п.2)
+### 2.3. Rollout замість Deployment (п.2)
 
-У `charts/online-library/values-minikube.yaml` поставте `rollout.enabled: true`, потім:
+У гілці `lab6` у `charts/online-library/values-minikube.yaml` уже стоїть `rollout.enabled: true`, тому після перемикання root Argo CD сам видалив Deployment backend і створив Rollout:
 
 ```powershell
-git commit -am "Switch backend to Argo Rollout (canary, 4 replicas)"
-git push
 argocd app get online-library --refresh
 kubectl get rollout,deploy -n online-library    # Deployment backend зник, з'явився Rollout
 kubectl argo rollouts get rollout online-library-backend -n online-library

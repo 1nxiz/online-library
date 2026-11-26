@@ -1,0 +1,24 @@
+{{- /* ЛР-7 п.6d: алерт, якщо понад 5% відповідей backend — 5xx протягом 1 хв */}}
+{{- if and .Values.metrics.enabled .Values.alerts.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "library.componentName" (list . "alerts") }}
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+spec:
+  groups:
+    - name: online-library
+      rules:
+        - alert: OnlineLibraryHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}",status=~"5.."}[1m]))
+              / sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}"}[1m]))
+              > {{ .Values.alerts.errorRateThreshold }}
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Онлайн бібліотека: понад {{ mulf .Values.alerts.errorRateThreshold 100 }}% відповідей 5xx"
+            description: "Частка 5xx = {{ "{{" }} $value | humanizePercentage {{ "}}" }}"
+{{- end }}

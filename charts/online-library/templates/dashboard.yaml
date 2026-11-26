@@ -1,0 +1,13 @@
+{{- /* ЛР-7: дашборд як код. Sidecar Grafana підхоплює ConfigMap з міткою grafana_dashboard */}}
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "library.componentName" (list . "dashboard") }}
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+data:
+  online-library.json: |-
+{{ .Files.Get "dashboards/online-library.json" | indent 4 }}
+{{- end }}
