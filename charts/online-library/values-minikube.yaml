@@ -3,7 +3,7 @@
 
 backend:
   image:
-    tag: "2.0.0" # <- ЗМІНЮВАТИ ТУТ для нового релізу (ЛР-7: образ з /metrics)
+    tag: "2.1.0" # <- ЗМІНЮВАТИ ТУТ для нового релізу (ЛР-7: образ з /metrics)
   replicaCount: 2
   # ЛР-7: «погана» поведінка. "0" — нормальна версія; "0.5" — половина запитів отримує 500
   env:
@@ -12,7 +12,7 @@ backend:
 
 frontend:
   image:
-    tag: "2.0.0"
+    tag: "2.1.0"
   replicaCount: 2
   service:
     type: NodePort
