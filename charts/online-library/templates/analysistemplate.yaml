@@ -10,7 +10,12 @@ metadata:
 spec:
   metrics:
     - name: success-rate
+      # Старі поди (1.x) не мають /metrics, тож дані є лише від нового пода. Prometheus збирає їх
+      # раз на 15 с, а rate[1m] потребує щонайменше двох вимірів — тому перший вимір через 60 с.
+      initialDelay: 60s
       interval: 30s # вимір кожні 30 с
+      # «Немає даних» — це Error, а не Failed; дозволяємо кілька таких вимірів, поки метрики з'являться
+      consecutiveErrorLimit: 10
       count: 4 # усього 4 виміри (2 хв)
       failureLimit: 1 # 2-й невдалий вимір -> AnalysisRun Failed -> abort
       successCondition: result[0] >= {{ .Values.rollout.analysis.successThreshold }}
