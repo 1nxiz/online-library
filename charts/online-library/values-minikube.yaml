@@ -45,7 +45,7 @@ tests:
 # ЛР-6/7: backend через Argo Rollouts (canary). 5 реплік: setWeight 20 = рівно 1 canary-под
 rollout:
   enabled: true
-  replicaCount: 5
+  replicaCount: 8
   # ЛР-7: рішення про реліз приймає аналіз метрик (ручної паузи з ЛР-6 більше немає)
   analysis:
     enabled: true
